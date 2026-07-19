@@ -1,0 +1,10 @@
+target/
+data/
+persistdata*/
+workdata/
+.idea/
+*.iml
+.env
+*.log
+*.inspect.ndjson
+docs/HANDOFF.md

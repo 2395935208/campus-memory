@@ -1,0 +1,11 @@
+services:
+  campusmemory:
+    build: .
+    ports: ["${HOST_PORT:-8080}:8080"]
+    environment:
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      QWEN_MODEL: ${QWEN_MODEL:-qwen3.7-plus}
+    volumes: ["campusmemory-data:/app/data"]
+    restart: unless-stopped
+volumes:
+  campusmemory-data:

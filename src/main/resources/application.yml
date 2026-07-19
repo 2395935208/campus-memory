@@ -1,0 +1,16 @@
+server:
+  port: ${PORT:8080}
+spring:
+  datasource:
+    # WRITE_DELAY=0 makes each committed memory durable immediately, including during abrupt VM/container loss.
+    url: jdbc:h2:file:${DATA_DIR:./data}/campusmemory;AUTO_SERVER=TRUE;WRITE_DELAY=0
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+qwen:
+  api-key: ${DASHSCOPE_API_KEY:}
+  base-url: ${QWEN_BASE_URL:https://dashscope-intl.aliyuncs.com/compatible-mode/v1}
+  model: ${QWEN_MODEL:qwen3.7-plus}

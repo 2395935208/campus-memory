@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CampusMemory</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main>
+  <header><div><span class="eyebrow">QWEN CLOUD · MEMORYAGENT</span><h1>CampusMemory</h1><p>A learning coach that remembers what matters—and lets you stay in control.</p></div><span id="mode">CHECKING…</span></header>
+  <section class="workspace">
+    <article class="chat-card">
+      <div class="toolbar"><label>Learner ID <input id="userId" value="demo-student"></label><button id="newSession">＋ New session</button></div>
+      <div id="chat" aria-live="polite"><div class="message assistant">Tell me what you are learning, your goal, and how much time you have each day.</div></div>
+      <form id="composer"><textarea id="message" rows="3" placeholder="Example: I am learning Java backend and can study 1 hour each day…" required></textarea><button class="primary">Send</button></form>
+    </article>
+    <aside class="memory-card"><div class="aside-title"><div><span class="eyebrow">TRANSPARENT MEMORY</span><h2>Memory vault</h2></div><button id="refresh">↻</button></div><p class="hint">Active memories are recalled across sessions. Superseded and forgotten items remain visible for the demo audit trail.</p><div id="memories"></div></aside>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body></html>
