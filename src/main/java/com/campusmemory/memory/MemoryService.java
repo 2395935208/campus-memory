@@ -13,6 +13,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class MemoryService {
+    private static final Set<String> DAILY_STUDY_TIME_KEYS = Set.of(
+            "daily_study_time",
+            "daily_study_duration",
+            "daily_learning_time",
+            "daily_study_hours",
+            "daily_study_minutes"
+    );
+
     private final MemoryRepository repository;
     public MemoryService(MemoryRepository repository) { this.repository = repository; }
 
@@ -115,10 +123,10 @@ public class MemoryService {
         return (double) matches / tokens.size();
     }
     private static String canonicalKey(String value) {
-        return switch (normalize(value)) {
-            case "daily_study_duration", "daily_learning_time", "daily_study_hours", "daily_study_minutes" -> "daily_study_time";
-            default -> normalize(value);
-        };
+        String key = normalize(value);
+        boolean dailyStudyTime = DAILY_STUDY_TIME_KEYS.stream()
+                .anyMatch(alias -> key.equals(alias) || key.startsWith(alias + "_"));
+        return dailyStudyTime ? "daily_study_time" : key;
     }
     private static String normalize(String value) { return value.trim().toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}_-]+", "_"); }
     private static boolean blank(String value) { return value == null || value.isBlank(); }

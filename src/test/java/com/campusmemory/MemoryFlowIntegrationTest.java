@@ -49,6 +49,26 @@ class MemoryFlowIntegrationTest {
                 .satisfies(m -> assertThat(m.replacedBy()).isNotNull());
     }
 
+    @Test void canonicalizesValueSpecificSuffixesWhenReplacingDailyStudyTime() {
+        String user = "value-suffix-replacement-test";
+        service.remember(user, List.of(new ExtractedMemory(
+                "CONSTRAINT", "daily_study_time_60_minutes", "Can study 60 minutes each day.", .8, null)));
+        service.remember(user, List.of(new ExtractedMemory(
+                "CONSTRAINT", "daily_study_time_90_minutes", "Can study 90 minutes each day.", .8, null)));
+
+        var memories = service.list(user);
+        assertThat(memories).hasSize(2);
+        assertThat(memories).filteredOn(m -> m.active())
+                .singleElement()
+                .satisfies(m -> {
+                    assertThat(m.key()).isEqualTo("daily_study_time");
+                    assertThat(m.content()).isEqualTo("Can study 90 minutes each day.");
+                });
+        assertThat(memories).filteredOn(m -> !m.active())
+                .singleElement()
+                .satisfies(m -> assertThat(m.replacedBy()).isNotNull());
+    }
+
     @Test void repairsAlreadyStoredActiveAliasesOnRead() {
         String user = "alias-reconciliation-test";
         service.remember(user, List.of(new ExtractedMemory("CONSTRAINT", "daily_study_time", "60 minutes", .8, null)));
@@ -69,6 +89,39 @@ class MemoryFlowIntegrationTest {
                     assertThat(m.id()).isEqualTo(replacementId);
                     assertThat(m.key()).isEqualTo("daily_study_time");
                     assertThat(m.content()).isEqualTo("90 minutes");
+                });
+        assertThat(memories).filteredOn(m -> !m.active())
+                .singleElement()
+                .satisfies(m -> assertThat(m.replacedBy()).isEqualTo(replacementId));
+    }
+
+    @Test void repairsAlreadyStoredValueSpecificDailyStudyKeysOnRead() {
+        String user = "value-suffix-reconciliation-test";
+
+        Memory oldMemory = new Memory();
+        oldMemory.setUserId(user);
+        oldMemory.setType("CONSTRAINT");
+        oldMemory.setMemoryKey("daily_study_time_60_minutes");
+        oldMemory.setContent("Can study 60 minutes each day.");
+        oldMemory.setImportance(.8);
+        repository.saveAndFlush(oldMemory);
+
+        Memory newMemory = new Memory();
+        newMemory.setUserId(user);
+        newMemory.setType("CONSTRAINT");
+        newMemory.setMemoryKey("daily_study_time_90_minutes");
+        newMemory.setContent("Can study 90 minutes each day.");
+        newMemory.setImportance(.8);
+        newMemory = repository.saveAndFlush(newMemory);
+
+        var memories = service.list(user);
+        Long replacementId = newMemory.getId();
+        assertThat(memories).filteredOn(m -> m.active())
+                .singleElement()
+                .satisfies(m -> {
+                    assertThat(m.id()).isEqualTo(replacementId);
+                    assertThat(m.key()).isEqualTo("daily_study_time");
+                    assertThat(m.content()).isEqualTo("Can study 90 minutes each day.");
                 });
         assertThat(memories).filteredOn(m -> !m.active())
                 .singleElement()
