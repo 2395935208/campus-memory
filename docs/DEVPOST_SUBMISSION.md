@@ -4,6 +4,14 @@
 
 CampusMemory — a transparent memory layer for learning
 
+## Submission links
+
+- Live application: [http://47.239.40.162](http://47.239.40.162)
+- Public health check: [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
+- Public GitHub repository: [https://github.com/2395935208/campus-memory](https://github.com/2395935208/campus-memory)
+- Architecture diagram: [`docs/ARCHITECTURE.md`](https://github.com/2395935208/campus-memory/blob/main/docs/ARCHITECTURE.md)
+- Alibaba Cloud deployment proof: [`deploy/aliyun-ecs-user-data.sh`](https://github.com/2395935208/campus-memory/blob/main/deploy/aliyun-ecs-user-data.sh)
+
 ## Elevator pitch
 
 CampusMemory is a Qwen-powered learning coach that remembers a student's goals, constraints, skill level, and recurring mistakes across sessions while keeping every memory visible and controllable.
@@ -18,7 +26,7 @@ CampusMemory uses Qwen Cloud structured output to extract durable facts from nat
 
 ## How we built it
 
-The application is a Java 17 Spring Boot monolith with a static responsive web interface, REST API, JPA, and persistent H2 storage. Qwen Cloud is called through its OpenAI-compatible Chat Completions endpoint for structured extraction and personalized coaching. The app is packaged as a Docker container and deployed on Alibaba Cloud ECS with a persistent data volume.
+The application is a Java 17 Spring Boot monolith with a static responsive web interface, REST API, JPA, and persistent H2 storage. Qwen Cloud is called through its OpenAI-compatible Chat Completions endpoint for structured extraction and personalized coaching. The app is packaged as a Docker container and deployed on Alibaba Cloud ECS in the China (Hong Kong) region with a persistent data volume.
 
 ## Challenges
 

@@ -2,6 +2,10 @@
 
 > A transparent persistent-memory learning coach powered by Qwen Cloud.
 
+**Live demo:** [http://47.239.40.162](http://47.239.40.162)
+
+**Health check:** [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
+
 CampusMemory is a **MemoryAgent track** submission for the Qwen Cloud Global AI Hackathon. Unlike a stateless chatbot, it extracts durable learner facts, recalls only the most relevant memories in later sessions, replaces conflicting facts, expires short-lived context, and gives the learner a visible memory vault with a one-click forget control.
 
 ## Why it matters
@@ -28,13 +32,16 @@ Students repeatedly explain their goals, schedule, skill level, and recurring mi
 
 ```mermaid
 flowchart LR
-    U["Learner in browser"] --> W["Static web UI"]
-    W --> A["Spring Boot REST API"]
-    A --> O["Memory orchestrator"]
+    subgraph ECS["Alibaba Cloud ECS · Ubuntu 22.04"]
+        subgraph D["Docker container"]
+            W["Static web UI"] --> A["Spring Boot REST API"]
+            A --> O["Memory lifecycle service"]
+            O --> R["Bounded top-5 retrieval"]
+        end
+        R --> H[("Persistent H2<br/>Docker volume")]
+    end
+    U["Learner browser"] -->|"HTTP :80"| W
     O --> Q["Qwen Cloud API<br/>structured extraction + coaching"]
-    O --> R["Bounded retrieval scorer"]
-    R --> H[("Persistent H2 memory store")]
-    A -. "container deployment" .-> E["Alibaba Cloud ECS"]
 ```
 
 The Qwen API is stateless. CampusMemory owns the persistent memory lifecycle and sends only the five highest-scoring active memories in each prompt.
@@ -81,11 +88,17 @@ curl http://localhost:8080/api/health
 mvn test
 ```
 
-The integration tests verify conflicting-memory replacement, retained audit history, and manual forgetting removal from recall.
+The integration tests verify conflicting-memory replacement, semantic-key alias repair, retained audit history, and manual forgetting removal from recall.
 
 ## Alibaba Cloud deployment
 
-The production target is an Alibaba Cloud ECS instance with Docker. See [`deploy/README.md`](deploy/README.md) and the executable ECS user-data file [`deploy/aliyun-ecs-user-data.sh`](deploy/aliyun-ecs-user-data.sh). The public health URL is the final deployment smoke-test evidence.
+The live judging deployment runs in Docker on Alibaba Cloud ECS in the China (Hong Kong) region. Administration uses Alibaba Cloud Session Manager, while the security group exposes only HTTP port `80` to the public internet.
+
+- **Public app:** [http://47.239.40.162](http://47.239.40.162)
+- **Public health evidence:** [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
+- **Deployment instructions:** [`deploy/README.md`](deploy/README.md)
+- **Alibaba Cloud proof code:** [`deploy/aliyun-ecs-user-data.sh`](deploy/aliyun-ecs-user-data.sh)
+- **Detailed architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## Privacy and safety
 

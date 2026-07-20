@@ -32,4 +32,4 @@ Click **Forget** on one active memory, start a new session, and show that the fo
 
 ## 2:15–2:35 — Deployment and close
 
-Show `/api/health`, the Alibaba Cloud ECS console/public IP, and the public GitHub repository. Close with: “CampusMemory turns memory from hidden chat history into a transparent, testable agent capability.”
+Show [the public health response](http://47.239.40.162/api/health), the Alibaba Cloud ECS console with public IP `47.239.40.162`, and the [public GitHub repository](https://github.com/2395935208/campus-memory). Close with: “CampusMemory turns memory from hidden chat history into a transparent, testable agent capability.”

@@ -1,5 +1,25 @@
 # Architecture and engineering decisions
 
+## Deployment topology
+
+```mermaid
+flowchart LR
+    subgraph ECS["Alibaba Cloud ECS · China (Hong Kong)"]
+        subgraph C["CampusMemory Docker container"]
+            UI["Static HTML/CSS/JS"] --> API["Spring Boot REST API"]
+            API --> M["Memory lifecycle service"]
+            M --> S["Explainable top-5 scorer"]
+        end
+        S --> V[("Persistent H2<br/>Docker volume")]
+    end
+    U["Learner browser"] -->|"HTTP :80"| UI
+    M -->|"HTTPS"| Q["Qwen Cloud API"]
+```
+
+The public surface is limited to HTTP port 80. Alibaba Cloud Session Manager provides administrative access without exposing SSH. The Qwen API key is supplied through the server-side `.env` file and is never sent to the browser or committed to Git.
+
+## Request and memory lifecycle
+
 ```mermaid
 sequenceDiagram
     participant U as Learner
