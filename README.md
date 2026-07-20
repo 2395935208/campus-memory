@@ -6,6 +6,8 @@
 
 **Health check:** [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
 
+**Demo video:** [CampusMemory — Transparent Persistent Memory for Qwen Cloud](https://youtu.be/1syF-d8E1Og)
+
 CampusMemory is a **MemoryAgent track** submission for the Qwen Cloud Global AI Hackathon. Unlike a stateless chatbot, it extracts durable learner facts, recalls only the most relevant memories in later sessions, replaces conflicting facts, expires short-lived context, and gives the learner a visible memory vault with a one-click forget control.
 
 ## Why it matters

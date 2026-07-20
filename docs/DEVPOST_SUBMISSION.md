@@ -8,6 +8,7 @@ CampusMemory — a transparent memory layer for learning
 
 - Live application: [http://47.239.40.162](http://47.239.40.162)
 - Public health check: [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
+- Public demo video: [https://youtu.be/1syF-d8E1Og](https://youtu.be/1syF-d8E1Og)
 - Public GitHub repository: [https://github.com/2395935208/campus-memory](https://github.com/2395935208/campus-memory)
 - Architecture explanation: [`docs/ARCHITECTURE.md`](https://github.com/2395935208/campus-memory/blob/main/docs/ARCHITECTURE.md)
 - Architecture image: [`docs/CampusMemory-Architecture.png`](https://github.com/2395935208/campus-memory/blob/main/docs/CampusMemory-Architecture.png)
