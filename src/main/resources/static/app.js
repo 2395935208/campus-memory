@@ -1,10 +1,11 @@
 const $=s=>document.querySelector(s), chat=$('#chat'), vault=$('#memories');
-let sessionId=crypto.randomUUID();
+const newSessionId=()=>globalThis.crypto?.randomUUID?.()??`session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+let sessionId=newSessionId();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function bubble(text,role){chat.insertAdjacentHTML('beforeend',`<div class="message ${role}">${esc(text)}</div>`);chat.scrollTop=chat.scrollHeight}
 async function loadMemories(){const user=encodeURIComponent($('#userId').value);const r=await fetch(`/api/memories?userId=${user}`);const list=await r.json();vault.innerHTML=list.length?list.map(m=>`<div class="memory ${m.active?'':'inactive'}"><div class="memory-top"><span class="badge">${esc(m.type)} · ${esc(m.key)}</span><span class="score">importance ${m.importance.toFixed(2)}</span></div><p>${esc(m.content)}</p><div class="meta"><span>${m.active?'ACTIVE':m.replacedBy?'SUPERSEDED':'FORGOTTEN'}</span>${m.active?`<button class="forget" onclick="forget(${m.id})">Forget</button>`:''}</div></div>`).join(''):'<p class="hint">No durable memory yet.</p>'}
 async function forget(id){await fetch(`/api/memories/${id}?userId=${encodeURIComponent($('#userId').value)}`,{method:'DELETE'});loadMemories()}
 $('#composer').addEventListener('submit',async e=>{e.preventDefault();const box=$('#message'),message=box.value.trim();if(!message)return;bubble(message,'user');box.value='';$('.primary').disabled=true;try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:$('#userId').value,sessionId,message})});const data=await r.json();bubble(data.answer,'assistant');if(data.usedMemories.length){chat.insertAdjacentHTML('beforeend',`<div class="trace"><strong>Memory trace</strong><br>${data.usedMemories.map(m=>`${esc(m.key)} · score ${m.relevance.toFixed(3)}`).join('<br>')}</div>`)}$('#mode').textContent=data.mode;await loadMemories()}catch(err){bubble('Request failed: '+err.message,'assistant')}finally{$('.primary').disabled=false}});
-$('#newSession').onclick=()=>{sessionId=crypto.randomUUID();chat.innerHTML='';bubble('New session started. I can still recall durable memories for this learner.','assistant')};
+$('#newSession').onclick=()=>{sessionId=newSessionId();chat.innerHTML='';bubble('New session started. I can still recall durable memories for this learner.','assistant')};
 $('#refresh').onclick=loadMemories;$('#userId').onchange=loadMemories;
-fetch('/api/health').then(r=>r.json()).then(x=>$('#mode').textContent=x.qwen==='configured'?'QWEN CLOUD':'DEMO MODE');loadMemories();
+fetch('/api/health').then(r=>r.json()).then(x=>$('#mode').textContent=x.qwen==='configured'?'QWEN CLOUD':'DEMO MODE').catch(()=>$('#mode').textContent='HEALTH ERROR');loadMemories();
