@@ -1,5 +1,7 @@
 # Architecture and engineering decisions
 
+**Submission asset:** [CampusMemory-Architecture.png](CampusMemory-Architecture.png) — 1600×900 PNG for Devpost and demo-video use.
+
 ## Deployment topology
 
 ```mermaid

@@ -9,7 +9,8 @@ CampusMemory — a transparent memory layer for learning
 - Live application: [http://47.239.40.162](http://47.239.40.162)
 - Public health check: [http://47.239.40.162/api/health](http://47.239.40.162/api/health)
 - Public GitHub repository: [https://github.com/2395935208/campus-memory](https://github.com/2395935208/campus-memory)
-- Architecture diagram: [`docs/ARCHITECTURE.md`](https://github.com/2395935208/campus-memory/blob/main/docs/ARCHITECTURE.md)
+- Architecture explanation: [`docs/ARCHITECTURE.md`](https://github.com/2395935208/campus-memory/blob/main/docs/ARCHITECTURE.md)
+- Architecture image: [`docs/CampusMemory-Architecture.png`](https://github.com/2395935208/campus-memory/blob/main/docs/CampusMemory-Architecture.png)
 - Alibaba Cloud deployment proof: [`deploy/aliyun-ecs-user-data.sh`](https://github.com/2395935208/campus-memory/blob/main/deploy/aliyun-ecs-user-data.sh)
 
 ## Elevator pitch

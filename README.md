@@ -46,6 +46,8 @@ flowchart LR
 
 The Qwen API is stateless. CampusMemory owns the persistent memory lifecycle and sends only the five highest-scoring active memories in each prompt.
 
+For submission forms and video editing, download the [1600×900 architecture PNG](docs/CampusMemory-Architecture.png).
+
 ## Run locally
 
 Requirements: Java 17 and Maven 3.9+.
