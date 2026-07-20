@@ -1,6 +1,8 @@
 package com.campusmemory;
 
 import com.campusmemory.memory.MemoryDtos.ExtractedMemory;
+import com.campusmemory.memory.Memory;
+import com.campusmemory.memory.MemoryRepository;
 import com.campusmemory.memory.MemoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:testdb")
 class MemoryFlowIntegrationTest {
     @Autowired MemoryService service;
+    @Autowired MemoryRepository repository;
 
     @Test void replacesConflictingMemoryAndKeepsAuditTrail() {
         String user = "replacement-test";
@@ -26,5 +29,49 @@ class MemoryFlowIntegrationTest {
         var stored = service.remember(user, List.of(new ExtractedMemory("GOAL", "career_goal", "Backend internship", .95, null))).get(0);
         service.forget(user, stored.id());
         assertThat(service.retrieve(user, "career", 5)).isEmpty();
+    }
+
+    @Test void canonicalizesQwenAliasWhenReplacingDailyStudyTime() {
+        String user = "alias-replacement-test";
+        service.remember(user, List.of(new ExtractedMemory("CONSTRAINT", "daily_study_time", "60 minutes", .8, null)));
+        service.remember(user, List.of(new ExtractedMemory("CONSTRAINT", "daily_study_duration", "90 minutes", .8, null)));
+
+        var memories = service.list(user);
+        assertThat(memories).hasSize(2);
+        assertThat(memories).filteredOn(m -> m.active())
+                .singleElement()
+                .satisfies(m -> {
+                    assertThat(m.key()).isEqualTo("daily_study_time");
+                    assertThat(m.content()).isEqualTo("90 minutes");
+                });
+        assertThat(memories).filteredOn(m -> !m.active())
+                .singleElement()
+                .satisfies(m -> assertThat(m.replacedBy()).isNotNull());
+    }
+
+    @Test void repairsAlreadyStoredActiveAliasesOnRead() {
+        String user = "alias-reconciliation-test";
+        service.remember(user, List.of(new ExtractedMemory("CONSTRAINT", "daily_study_time", "60 minutes", .8, null)));
+
+        Memory alias = new Memory();
+        alias.setUserId(user);
+        alias.setType("CONSTRAINT");
+        alias.setMemoryKey("daily_study_duration");
+        alias.setContent("90 minutes");
+        alias.setImportance(.8);
+        alias = repository.saveAndFlush(alias);
+
+        var memories = service.list(user);
+        Long replacementId = alias.getId();
+        assertThat(memories).filteredOn(m -> m.active())
+                .singleElement()
+                .satisfies(m -> {
+                    assertThat(m.id()).isEqualTo(replacementId);
+                    assertThat(m.key()).isEqualTo("daily_study_time");
+                    assertThat(m.content()).isEqualTo("90 minutes");
+                });
+        assertThat(memories).filteredOn(m -> !m.active())
+                .singleElement()
+                .satisfies(m -> assertThat(m.replacedBy()).isEqualTo(replacementId));
     }
 }

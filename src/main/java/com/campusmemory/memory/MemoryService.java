@@ -19,10 +19,11 @@ public class MemoryService {
     @Transactional
     public List<MemoryView> remember(String userId, List<ExtractedMemory> candidates) {
         expireOld(userId);
+        reconcileActiveAliases(userId);
         List<MemoryView> saved = new ArrayList<>();
         for (ExtractedMemory item : candidates) {
             if (item == null || blank(item.content()) || blank(item.key())) continue;
-            String key = normalize(item.key());
+            String key = canonicalKey(item.key());
             var existing = repository.findFirstByUserIdAndMemoryKeyAndActiveTrue(userId, key);
             if (existing.isPresent() && existing.get().getContent().equalsIgnoreCase(item.content().trim())) continue;
             Memory memory = new Memory();
@@ -47,6 +48,7 @@ public class MemoryService {
     @Transactional
     public List<MemoryView> retrieve(String userId, String query, int limit) {
         expireOld(userId);
+        reconcileActiveAliases(userId);
         return repository.findByUserIdAndActiveTrueOrderByUpdatedAtDesc(userId).stream()
                 .map(m -> Map.entry(m, score(m, query)))
                 .sorted(Map.Entry.<Memory, Double>comparingByValue().reversed())
@@ -55,8 +57,10 @@ public class MemoryService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<MemoryView> list(String userId) {
+        expireOld(userId);
+        reconcileActiveAliases(userId);
         return repository.findByUserIdOrderByUpdatedAtDesc(userId).stream().map(m -> MemoryView.of(m, 0)).toList();
     }
 
@@ -75,6 +79,27 @@ public class MemoryService {
                 .forEach(m -> { m.setActive(false); repository.save(m); });
     }
 
+    private void reconcileActiveAliases(String userId) {
+        Map<String, Memory> newestByKey = new HashMap<>();
+        List<Memory> active = repository.findByUserIdAndActiveTrueOrderByUpdatedAtDesc(userId).stream()
+                .sorted(Comparator.comparing(Memory::getUpdatedAt).thenComparing(Memory::getId).reversed())
+                .toList();
+        for (Memory memory : active) {
+            String key = canonicalKey(memory.getMemoryKey());
+            Memory newest = newestByKey.putIfAbsent(key, memory);
+            if (newest == null) {
+                if (!memory.getMemoryKey().equals(key)) {
+                    memory.setMemoryKey(key);
+                    repository.save(memory);
+                }
+                continue;
+            }
+            memory.setActive(false);
+            memory.setReplacedBy(newest.getId());
+            repository.save(memory);
+        }
+    }
+
     private double score(Memory m, String query) {
         double keyword = tokenOverlap((m.getMemoryKey() + " " + m.getContent()).toLowerCase(), query.toLowerCase());
         long ageHours = Math.max(0, Duration.between(m.getUpdatedAt(), Instant.now()).toHours());
@@ -88,6 +113,12 @@ public class MemoryService {
         if (tokens.isEmpty()) return 0;
         long matches = tokens.stream().filter(memory::contains).count();
         return (double) matches / tokens.size();
+    }
+    private static String canonicalKey(String value) {
+        return switch (normalize(value)) {
+            case "daily_study_duration", "daily_learning_time", "daily_study_hours", "daily_study_minutes" -> "daily_study_time";
+            default -> normalize(value);
+        };
     }
     private static String normalize(String value) { return value.trim().toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}_-]+", "_"); }
     private static boolean blank(String value) { return value == null || value.isBlank(); }
